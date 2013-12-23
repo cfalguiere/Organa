@@ -1,5 +1,5 @@
-(ns ptang-logs.test.core
-  (:use [ptang-logs.core])
+(ns ptanglogs.test.core
+  (:use [ptanglogs.core])
   (:use [clojure.test])
   (:use [midje.sweet]))
 

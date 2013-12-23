@@ -1,4 +1,4 @@
-(ns ptang-logs.core
+(ns ptanglogs.core
   (:use [incanter.core :only [$ $data $rollup col-names conj-cols save]])
   (:use [incanter.stats :only [mean sd quantile]])
   (:require [clojure.java.io :as io]
