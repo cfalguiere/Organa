@@ -3,8 +3,7 @@
   (:use [incanter.stats :only [mean sd quantile]])
   (:require [clojure.java.io :as io]
 	    [incanter.core :as incanter]
-	    [incanter.io :as incanterio])
-  (:import java.util.regex.Pattern))
+	    [incanter.io :as incanterio]))
 
 ;; chemin de readlines
 ;;http://blog.magpiebrain.com/tag/incanter/
@@ -76,6 +75,6 @@
       [:label :count :mean :sd :min :q95 :max])))
   
 (defn -main [filename]
-   (incanter/save (stats
+   (save (stats
 	  (readings-to-dataset (parse-file  filename))) "stats.csv")) 
  
