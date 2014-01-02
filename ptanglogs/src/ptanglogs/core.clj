@@ -1,4 +1,5 @@
 (ns ptanglogs.core
+  (:use [clojure.string :only [replace-first]])
   (:use [incanter.core :only [$ $data $rollup col-names conj-cols save]])
   (:use [incanter.stats :only [mean sd quantile]])
   (:require [clojure.java.io :as io]
@@ -8,19 +9,31 @@
 ;; chemin de readlines
 ;;http://blog.magpiebrain.com/tag/incanter/
 
-(def pattern #"^([0-9- :,]*) INFO.*TIME MONITOR.*;(.*);(.*) ms$")
+(def time-pattern #"^([0-9- :,]*) INFO.*TIME MONITOR.*;(.*);(.*) ms$")
+(def error-pattern #"^([0-9- :,]*).* ERROR (.*)$")
 
 (defn str-to-long [x] (Long/parseLong (apply str (filter #(Character/isDigit %) x))))
 
-(defn to-reading
+(defn time-to-reading
   "filter out line and convert duration into a long"
   [[s t l d]]
   [t l (str-to-long d)] )
 
+(defn error-to-reading
+  "filter out line"
+  [[s t l]]
+  (cond
+   (re-matches #".*\w*at .*" l) nil
+   (re-matches #".*WorkerThread#.*" l) [t (replace-first l #"\(WorkerThread#.*\)" "")]
+   (re-matches #".*HealthDetailsServiceWeb - unable.*" l) [t (replace-first l #"\[.*\]" "")]
+   (re-matches #".*LifeSummaryServiceWeb - unable.*" l) [t (replace-first l #"\[.*\]" "")]
+   (re-matches #".*SLF4J: Found binding in.*" l) [t (replace-first l #"\[.*\]" "")]
+   :else [t l] ))
+
 (defn parse-line
   "returns the reading as a vector"
-  [source]
-  (first (map to-reading (re-seq pattern source))))
+  [pattern mapper source]
+  (first (map mapper (re-seq pattern source))))
 
 (defn filter-matching
   [readings]
@@ -29,10 +42,10 @@
  
 (defn parse-file 
   "returns a list of readings"
-  [filename]
+  [filename parser]
   (filter-matching
    (with-open [rdr (io/reader filename)]
-       (doall (map parse-line (line-seq rdr))))))
+       (doall (map parser (line-seq rdr))))))
 
 (defn response-time-summary
   "build the summary of a dataset"
@@ -73,8 +86,26 @@
        ($ :q95 (nth result 4)) 
        ($ :max (nth result 5)) )
       [:label :count :mean :sd :min :q95 :max])))
-  
-(defn -main [filename]
-   (save (stats
-	  (readings-to-dataset (parse-file  filename))) "stats.csv")) 
+
+(defn counters
+   [ds]
+   (let [result (compute-stats ds)]
+     (col-names 
+      (conj-cols
+       ($ :label (nth result 0)) 
+       ($ :count (nth result 0)) )
+      [:label :count])))
+
+(defn -main
+  [& args]
+  (let [mode (first args)
+	filename (first (rest args))]
+    (cond
+     (= "time" mode) (let [parser (partial (partial parse-line time-pattern) time-to-reading) ]
+			   (save (stats
+			     (readings-to-dataset (parse-file  filename parser))) "stats.csv"))
+     (= "errors" mode) (let [parser (partial (partial parse-line error-pattern) error-to-reading)]
+			 (save (counters
+			     (readings-to-dataset (parse-file  filename parser))) "errors.csv"))
+     :else (println (str "invalid mode " mode)) ))) 
  
