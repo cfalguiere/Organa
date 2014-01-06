@@ -39,13 +39,14 @@
   [readings]
   "filter out non matching lines"
    (remove nil? readings))
- 
+  
 (defn parse-file 
   "returns a list of readings"
   [filename parser]
   (filter-matching
    (with-open [rdr (io/reader filename)]
-       (doall (map parser (line-seq rdr))))))
+     (doall (map parser (line-seq rdr)))))
+
 
 (defn response-time-summary
   "build the summary of a dataset"
