@@ -70,8 +70,16 @@
   "compute stats grouped by label"
   [ds]
   (let [metrics {:count count :mean mean :sd sd
-		 :min (partial q 0) :q95 (partial q 0.95) :max (partial q 1)}]
+		 :min (partial q 0) :q90 (partial q 0.90) :q95 (partial q 0.95) :max (partial q 1)}]
 	 (map (partial compute-metric ds) metrics)))
+
+(defn number-format
+  [s]
+  (map #(format "%.0f" %) s))
+
+(defn text-format
+  [s]
+  (map #(format "\"%s\"" %) s))
 
 (defn stats
    [ds]
@@ -80,19 +88,20 @@
       (conj-cols
        ($ :label (nth result 0)) 
        ($ :count (nth result 0)) 
-       ($ :mean (nth result 1)) 
-       ($ :sd (nth result 2)) 
-       ($ :min (nth result 3)) 
-       ($ :q95 (nth result 4)) 
-       ($ :max (nth result 5)) )
-      [:label :count :mean :sd :min :q95 :max])))
+       (number-format ($ :mean  (nth result 1))) 
+       (number-format ($ :sd (nth result 2)))
+       (number-format ($ :min (nth result 3)))
+       (number-format ($ :q90 (nth result 4))) 
+       (number-format ($ :q95 (nth result 5)))
+       (number-format ($ :max (nth result 6))) )
+      [:label :count :mean :sd :min :q90 :q95 :max])))
 
 (defn counters
    [ds]
    (let [result (compute-stats ds)]
      (col-names 
       (conj-cols
-       ($ :label (nth result 0)) 
+       (text-format ($ :label (nth result 0)))
        ($ :count (nth result 0)) )
       [:label :count])))
 
@@ -103,9 +112,11 @@
     (cond
      (= "time" mode) (let [parser (partial (partial parse-line time-pattern) time-to-reading) ]
 			   (save (stats
-			     (readings-to-dataset (parse-file  filename parser))) "stats.csv"))
+				  (readings-to-dataset (parse-file  filename parser))) "stats.csv"
+				  :delim \;))
      (= "errors" mode) (let [parser (partial (partial parse-line error-pattern) error-to-reading)]
 			 (save (counters
-			     (readings-to-dataset (parse-file  filename parser))) "errors.csv"))
+				(readings-to-dataset (parse-file  filename parser))) "errors.csv"
+				:delim \;))
      :else (println (str "invalid mode " mode)) ))) 
  
