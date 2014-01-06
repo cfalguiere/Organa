@@ -36,8 +36,8 @@
   (first (map mapper (re-seq pattern source))))
 
 (defn filter-matching
-  [readings]
   "filter out non matching lines"
+  [readings]
    (remove nil? readings))
   
 (defn parse-file 
@@ -45,7 +45,7 @@
   [filename parser]
   (filter-matching
    (with-open [rdr (io/reader filename)]
-     (doall (map parser (line-seq rdr)))))
+     (doall (map parser (line-seq rdr))))))
 
 
 (defn response-time-summary
@@ -106,18 +106,24 @@
        ($ :count (nth result 0)) )
       [:label :count])))
 
+
+(defn time-analysis
+  [filename]
+  (let [parser (partial (partial parse-line time-pattern) time-to-reading) ]
+    (save (stats (readings-to-dataset (parse-file  filename parser)))
+	  "stats.csv"  :delim \; )))
+
+(defn errors-analysis
+  [filename]
+  (let [parser (partial (partial parse-line error-pattern) error-to-reading)]
+    (save (counters (readings-to-dataset (parse-file  filename parser)))
+	  "errors.csv"	:delim \; )))
 (defn -main
   [& args]
   (let [mode (first args)
 	filename (first (rest args))]
     (cond
-     (= "time" mode) (let [parser (partial (partial parse-line time-pattern) time-to-reading) ]
-			   (save (stats
-				  (readings-to-dataset (parse-file  filename parser))) "stats.csv"
-				  :delim \;))
-     (= "errors" mode) (let [parser (partial (partial parse-line error-pattern) error-to-reading)]
-			 (save (counters
-				(readings-to-dataset (parse-file  filename parser))) "errors.csv"
-				:delim \;))
+     (= "time" mode) (time-analysis filename)
+     (= "errors" mode) (errors-analysis filename)
      :else (println (str "invalid mode " mode)) ))) 
  
