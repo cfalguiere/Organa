@@ -120,8 +120,7 @@
 	  "errors.csv"	:delim \; )))
 (defn -main
   [& args]
-  (let [mode (first args)
-	filename (first (rest args))]
+  (let [ [mode filename] args]
     (cond
      (= "time" mode) (time-analysis filename)
      (= "errors" mode) (errors-analysis filename)
