@@ -1,4 +1,4 @@
-(ns ptanglogs.core
+(ns organa.core
   (:use [clojure.string :only [replace-first]])
   (:use [incanter.core :only [$ $data $rollup col-names conj-cols save]])
   (:use [incanter.stats :only [mean sd quantile]])
