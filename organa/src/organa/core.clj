@@ -45,13 +45,6 @@
 		 :min (partial q 0) :q90 (partial q 0.90) :q95 (partial q 0.95) :max (partial q 1)}]
 	 (map (partial compute-metric ds) metrics)))
 
-(defn number-format
-  [s]
-  (map #(format "%.0f" %) s))
-
-(defn text-format
-  [s]
-  (map #(format "\"%s\"" %) s))
 
 (defn stats
    [ds]
@@ -60,7 +53,7 @@
       (conj-cols
        ($ :label (nth result 0)) 
        ($ :count (nth result 0)) 
-       (number-format ($ :mean  (nth result 1))) 
+       (number-format ($ :mean (nth result 1))) 
        (number-format ($ :sd (nth result 2)))
        (number-format ($ :min (nth result 3)))
        (number-format ($ :q90 (nth result 4))) 
@@ -73,7 +66,7 @@
    (let [result (compute-stats ds)]
      (col-names 
       (conj-cols
-       (text-format ($ :label (nth result 0)))
+       (quoted-text ($ :label (nth result 0)))
        ($ :count (nth result 0)) )
       [:label :count])))
 

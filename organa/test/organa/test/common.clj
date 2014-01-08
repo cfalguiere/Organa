@@ -12,3 +12,9 @@
 
 (fact "it should return a reading with 2 columns"
       (parse-line #"(\d*) (.*)" test-mapper "12 ab") => ["12" "ab"])
+
+(fact "it should return a rounded number as a string"
+      (number-format [12.34 45.67]) => ["12" "46"])
+
+(fact "it should return a quoted text"
+      (quoted-text ["ab" "cd"]) => ["\"ab\"" "\"cd\""])

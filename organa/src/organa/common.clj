@@ -28,3 +28,15 @@
    (with-open [rdr (io/reader filename)]
      (doall (map parser (line-seq rdr))))))
 
+(defn number-format
+  "convert a map of floats into a map of string representing the rounded number"
+  [mf]
+  {:pre  [(and (vector? mf) (float? (first mf)))] } 
+  (map #(format "%.0f" %) mf))
+
+(defn quoted-text
+  "convert a map of strings into a map of quoted strings"
+  [ms]
+  {:pre  [(and (vector? ms) (string? (first ms)))] } 
+  (map #(format "\"%s\"" %) ms))
+
