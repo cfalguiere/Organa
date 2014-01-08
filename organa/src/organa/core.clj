@@ -58,7 +58,7 @@
       (conj-cols
        ($ :label (nth result 0)) 
        ($ :count (nth result 0)) 
-       (number-format ($ :mean (nth result 1))) 
+       (number-format ($ :mean (nth result 1))) ;; TODO loop over metrics map 
        (number-format ($ :sd (nth result 2)))
        (number-format ($ :min (nth result 3)))
        (number-format ($ :q90 (nth result 4))) 
