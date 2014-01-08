@@ -1,18 +1,16 @@
 (ns organa.core
+  (:use [organa.common])
   (:use [clojure.string :only [replace-first]])
+  (:use [clojure.test :only [function?]] )
   (:use [incanter.core :only [$ $data $rollup col-names conj-cols save]])
   (:use [incanter.stats :only [mean sd quantile]])
   (:require [clojure.java.io :as io]
 	    [incanter.core :as incanter]
 	    [incanter.io :as incanterio]))
 
-;; chemin de readlines
-;;http://blog.magpiebrain.com/tag/incanter/
 
 (def time-pattern #"^([0-9- :,]*) INFO.*TIME MONITOR.*;(.*);(.*) ms$")
 (def error-pattern #"^([0-9- :,]*).* ERROR (.*)$")
-
-(defn str-to-long [x] (Long/parseLong (apply str (filter #(Character/isDigit %) x))))
 
 (defn time-to-reading
   "filter out line and convert duration into a long"
@@ -31,8 +29,9 @@
    :else [t l] ))
 
 (defn parse-line
-  "returns the reading as a vector"
+  "returns the file line as a vector representing the reading"
   [pattern mapper source]
+  {:pre  [(and  (function? mapper) (string? source))]} ;; TODO test pre pattern
   (first (map mapper (re-seq pattern source))))
 
 (defn filter-matching
