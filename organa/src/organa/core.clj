@@ -1,7 +1,6 @@
 (ns organa.core
   (:use [organa.common])
   (:use [clojure.string :only [replace-first]])
-  (:use [clojure.test :only [function?]] )
   (:use [incanter.core :only [$ $data $rollup col-names conj-cols save]])
   (:use [incanter.stats :only [mean sd quantile]])
   (:require [clojure.java.io :as io]
@@ -27,12 +26,6 @@
    (re-matches #".*LifeSummaryServiceWeb - unable.*" l) [t (replace-first l #"\[.*\]" "")]
    (re-matches #".*SLF4J: Found binding in.*" l) [t (replace-first l #"\[.*\]" "")]
    :else [t l] ))
-
-(defn parse-line
-  "returns the file line as a vector representing the reading"
-  [pattern mapper source]
-  {:pre  [(and  (function? mapper) (string? source))]} ;; TODO test pre pattern
-  (first (map mapper (re-seq pattern source))))
 
 (defn filter-matching
   "filter out non matching lines"
