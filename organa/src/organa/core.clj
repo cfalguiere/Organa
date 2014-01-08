@@ -36,12 +36,6 @@
      (doall (map parser (line-seq rdr))))))
 
 
-(defn response-time-summary
-  "build the summary of a dataset"
-  [ds] 
-   (zipmap [ :count :mean :sd :min :q95 :max]
-      (flatten (incanter/with-data ($ :duration ds)
-	   [ (count $data) (mean $data) (sd $data) (quantile $data :probs[0 0.95 1]) ] ))))
 
 (defn readings-to-dataset
   "build a dataset from a list of readings"
