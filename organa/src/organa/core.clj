@@ -89,6 +89,7 @@
 (defn -main
   "usage: time|errors logs.txt"
   [& args]
+  {:pre  [(and (string? (nth args 0)) (string? (nth args1)))] } 
   (let [ [mode filename] args]
     (cond
      (= "time" mode) (time-analysis filename)
