@@ -1,5 +1,6 @@
 (ns organa.common
-  (:use [clojure.test :only [function?]] ))
+  (:use [clojure.test :only [function?]] )
+  (:require [clojure.java.io :as io]) )
 
 (defn str-to-long
   "convert a string into a long"
@@ -18,3 +19,12 @@
   [readings]
   {:pre  [(seq? readings)]} 
   (remove nil? readings))
+
+(defn parse-file 
+  "read the file and returns a list of readings"
+  [filename parser]
+  {:pre  [(and  (function? parser) (string? filename))]} 
+  (filter-matching
+   (with-open [rdr (io/reader filename)]
+     (doall (map parser (line-seq rdr))))))
+

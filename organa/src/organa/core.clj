@@ -3,8 +3,7 @@
   (:use [clojure.string :only [replace-first]])
   (:use [incanter.core :only [$ $data $rollup col-names conj-cols save]])
   (:use [incanter.stats :only [mean sd quantile]])
-  (:require [clojure.java.io :as io]
-	    [incanter.core :as incanter]
+  (:require [incanter.core :as incanter]
 	    [incanter.io :as incanterio]))
 
 
@@ -26,16 +25,6 @@
    (re-matches #".*LifeSummaryServiceWeb - unable.*" l) [t (replace-first l #"\[.*\]" "")]
    (re-matches #".*SLF4J: Found binding in.*" l) [t (replace-first l #"\[.*\]" "")]
    :else [t l] ))
-
-  
-(defn parse-file 
-  "returns a list of readings"
-  [filename parser]
-  (filter-matching
-   (with-open [rdr (io/reader filename)]
-     (doall (map parser (line-seq rdr))))))
-
-
 
 (defn readings-to-dataset
   "build a dataset from a list of readings"
