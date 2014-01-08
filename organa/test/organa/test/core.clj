@@ -1,5 +1,5 @@
 (ns organa.test.core
-  (:use [ptanglogs.core])
+  (:use [organa.core])
   (:use [clojure.test])
   (:use [midje.sweet]))
 
