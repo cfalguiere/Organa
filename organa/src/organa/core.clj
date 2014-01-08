@@ -1,10 +1,9 @@
 (ns organa.core
   (:use [organa.common])
   (:use [clojure.string :only [replace-first]])
-  (:use [incanter.core :only [$ $data $rollup col-names conj-cols save]])
+  (:use [incanter.core :only [$ $data $rollup col-names conj-cols dataset]])
   (:use [incanter.stats :only [mean sd quantile]])
-  (:require [incanter.core :as incanter]
-	    [incanter.io :as incanterio]))
+  (:require [incanter.io :as incanterio]))
 
 
 (def time-pattern #"^([0-9- :,]*) INFO.*TIME MONITOR.*;(.*);(.*) ms$")
@@ -29,7 +28,7 @@
 (defn readings-to-dataset
   "build a dataset from a list of readings"
   [readings]
-  (incanter/dataset [:timestamp :label :duration] readings))
+  (dataset [:timestamp :label :duration] readings))
 
 (defn compute-metric
   "compute a metric grouped by label"
@@ -47,6 +46,7 @@
 
 
 (defn stats
+  "build the stats dataset from the readings dataset"
    [ds]
    (let [result (compute-stats ds)]
      (col-names 
@@ -62,6 +62,7 @@
       [:label :count :mean :sd :min :q90 :q95 :max])))
 
 (defn counters
+  "build the counters dataset from the readings dataset"
    [ds]
    (let [result (compute-stats ds)]
      (col-names 
@@ -72,17 +73,21 @@
 
 
 (defn time-analysis
+  "compute and save response time statistics"
   [filename]
   (let [parser (partial (partial parse-line time-pattern) time-to-reading) ]
-    (save (stats (readings-to-dataset (parse-file  filename parser)))
-	  "stats.csv"  :delim \; )))
+    (save-csv (stats (readings-to-dataset (parse-file  filename parser)))
+	  "stats.csv" )))
 
 (defn errors-analysis
+  "compute and save error counters"
   [filename]
   (let [parser (partial (partial parse-line error-pattern) error-to-reading)]
-    (save (counters (readings-to-dataset (parse-file  filename parser)))
-	  "errors.csv"	:delim \; )))
+    (save-csv (counters (readings-to-dataset (parse-file  filename parser)))
+	  "errors.csv")))
+
 (defn -main
+  "usage: time|errors logs.txt"
   [& args]
   (let [ [mode filename] args]
     (cond

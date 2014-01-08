@@ -1,5 +1,6 @@
 (ns organa.common
   (:use [clojure.test :only [function?]] )
+  (:use [incanter.core :only [save dataset?]])
   (:require [clojure.java.io :as io]) )
 
 (defn str-to-long
@@ -31,7 +32,8 @@
 (defn number-format
   "convert a map of floats into a map of string representing the rounded number"
   [mf]
-  {:pre  [(and (vector? mf) (float? (first mf)))] } 
+  ;{:pre  [(and (vector? mf) (float? (first mf)))] } ;; NaN
+ ; {:pre  [(vector? mf)] } ;; check whether the pre fails with sample
   (map #(format "%.0f" %) mf))
 
 (defn quoted-text
@@ -40,3 +42,8 @@
   {:pre  [(and (vector? ms) (string? (first ms)))] } 
   (map #(format "\"%s\"" %) ms))
 
+(defn save-csv
+  "save the dataset onto a csv file with french delimiter"
+  [ds filename]
+  {:pre  [(and (dataset? ds) (string? filename))] } 
+  (save ds filename :delim \;)) 
