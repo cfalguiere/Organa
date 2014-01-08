@@ -1,7 +1,8 @@
 (ns organa.core
   (:use [organa.common])
   (:use [clojure.string :only [replace-first]])
-  (:use [incanter.core :only [$ $data $rollup col-names conj-cols dataset]])
+  (:use [clojure.test :only [function?]] )
+  (:use [incanter.core :only [$ $data $rollup col-names conj-cols dataset dataset?]])
   (:use [incanter.stats :only [mean sd quantile]])
   (:require [incanter.io :as incanterio]))
 
@@ -28,18 +29,21 @@
 (defn readings-to-dataset
   "build a dataset from a list of readings"
   [readings]
+  {:pre [(seq? readings)] } 
   (dataset [:timestamp :label :duration] readings))
 
 (defn compute-metric
   "compute a metric grouped by label"
-  [ds [metric f]]
-  (col-names ($rollup f :duration :label ds) [:label metric])) 
+  [ds [metric-name f]]
+  {:pre [(and (dataset? ds) (keyword? metric-name) (function? f))] } 
+  (col-names ($rollup f :duration :label ds) [:label metric-name])) 
 
 (defn q [p ds] (quantile ds :probs [p])) 
 
 (defn compute-stats
   "compute stats grouped by label"
   [ds]
+  {:pre [(dataset? ds)] } 
   (let [metrics {:count count :mean mean :sd sd
 		 :min (partial q 0) :q90 (partial q 0.90) :q95 (partial q 0.95) :max (partial q 1)}]
 	 (map (partial compute-metric ds) metrics)))
@@ -48,6 +52,7 @@
 (defn stats
   "build the stats dataset from the readings dataset"
    [ds]
+   {:pre [(dataset? ds)] } 
    (let [result (compute-stats ds)]
      (col-names 
       (conj-cols
@@ -64,17 +69,19 @@
 (defn counters
   "build the counters dataset from the readings dataset"
    [ds]
+   {:pre  [(dataset? ds)] } 
    (let [result (compute-stats ds)]
      (col-names 
       (conj-cols
        (quoted-text ($ :label (nth result 0)))
-       ($ :count (nth result 0)) )
+       ($ :count (nth result 0)) ) 
       [:label :count])))
 
 
 (defn time-analysis
   "compute and save response time statistics"
   [filename]
+  {:pre  [(string? filename)] } 
   (let [parser (partial (partial parse-line time-pattern) time-to-reading) ]
     (save-csv (stats (readings-to-dataset (parse-file  filename parser)))
 	  "stats.csv" )))
@@ -82,6 +89,7 @@
 (defn errors-analysis
   "compute and save error counters"
   [filename]
+  {:pre [(string? filename)] } 
   (let [parser (partial (partial parse-line error-pattern) error-to-reading)]
     (save-csv (counters (readings-to-dataset (parse-file  filename parser)))
 	  "errors.csv")))
@@ -89,7 +97,7 @@
 (defn -main
   "usage: time|errors logs.txt"
   [& args]
-  {:pre  [(and (string? (nth args 0)) (string? (nth args1)))] } 
+  {:pre [(and (string? (nth args 0)) (string? (nth args 1)))] } 
   (let [ [mode filename] args]
     (cond
      (= "time" mode) (time-analysis filename)
