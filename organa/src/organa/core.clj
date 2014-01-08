@@ -27,10 +27,6 @@
    (re-matches #".*SLF4J: Found binding in.*" l) [t (replace-first l #"\[.*\]" "")]
    :else [t l] ))
 
-(defn filter-matching
-  "filter out non matching lines"
-  [readings]
-   (remove nil? readings))
   
 (defn parse-file 
   "returns a list of readings"
